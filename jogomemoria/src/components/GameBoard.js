@@ -39,7 +39,7 @@ const GameBoard = ({ cards, onCardPress, isDisabled, level }) => {
 const styles = StyleSheet.create({
   boardContainer: {
     flexDirection: "row",
-    flexWrap: "wrap", // Agora isso vai funcionar!
+    flexWrap: "wrap",
     justifyContent: "center",
     alignItems: "center",
     padding: CONTAINER_PADDING, // 10
