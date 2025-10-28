@@ -2,6 +2,7 @@
 import React, { useRef, useEffect } from "react";
 import { TouchableOpacity, Text, StyleSheet, Animated } from "react-native";
 
+// 1. Remova 'style' das props. Não precisamos mais dele.
 const Card = ({ card, onPress, isDisabled }) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
   const frontInterpolate = animatedValue.interpolate({
@@ -14,12 +15,10 @@ const Card = ({ card, onPress, isDisabled }) => {
   });
 
   useEffect(() => {
-    // Animação ao virar ou desvirar
     Animated.timing(animatedValue, {
-      // Usando Animated.timing [cite: 33]
       toValue: card.isFlipped || card.isMatched ? 180 : 0,
-      duration: 300, // Duração da animação
-      useNativeDriver: true, // Melhora performance
+      duration: 300,
+      useNativeDriver: true,
     }).start();
   }, [card.isFlipped, card.isMatched]);
 
@@ -37,6 +36,7 @@ const Card = ({ card, onPress, isDisabled }) => {
   };
 
   return (
+    // 2. Remova o [styles.cardContainer, style] e volte para apenas style={styles.cardContainer}
     <TouchableOpacity
       onPress={handlePress}
       style={styles.cardContainer}
@@ -58,8 +58,9 @@ const Card = ({ card, onPress, isDisabled }) => {
 
 const styles = StyleSheet.create({
   cardContainer: {
-    width: 60, // Ajuste o tamanho conforme necessário
-    height: 80, // Ajuste o tamanho conforme necessário
+    // 3. COLOQUE O TAMANHO FIXO DE VOLTA:
+    width: 80, // Um bom tamanho padrão
+    height: 100, // Proporcional
     margin: 5,
     alignItems: "center",
     justifyContent: "center",
@@ -69,20 +70,20 @@ const styles = StyleSheet.create({
     height: "100%",
     alignItems: "center",
     justifyContent: "center",
-    backfaceVisibility: "hidden", // Importante para a animação de virada
-    position: "absolute", // Permite sobrepor frente e verso
+    backfaceVisibility: "hidden",
+    position: "absolute",
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#ccc",
   },
   cardFront: {
-    backgroundColor: "#4a90e2", // Cor do verso
+    backgroundColor: "#4a90e2",
   },
   cardBack: {
-    backgroundColor: "#f0f0f0", // Cor da frente
+    backgroundColor: "#f0f0f0",
   },
   cardText: {
-    fontSize: 24, // Tamanho do emoji/texto
+    fontSize: 24,
   },
 });
 

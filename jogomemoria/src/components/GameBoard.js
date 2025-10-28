@@ -1,33 +1,36 @@
 // src/components/GameBoard.js
-import React from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
-import Card from './Card';
+import React from "react";
+import { View, StyleSheet } from "react-native"; // 1. Remova o 'Dimensions'
+import Card from "./Card";
+
+// 2. Defina as constantes de tamanho (DEVEM SER AS MESMAS DO Card.js)
+const CARD_WIDTH = 80;
+const CARD_MARGIN = 5;
+const CONTAINER_PADDING = 10; // O padding do 'boardContainer'
 
 const GameBoard = ({ cards, onCardPress, isDisabled, level }) => {
-  // Calcula o número de colunas baseado no nível
-  let numColumns = 2 + Math.floor((level -1) / 2) * 2;
+  // 3. Lógica para colunas (esta linha dá 2 colunas para o Nível 1)
+  let numColumns = 2 + Math.floor((level - 1) / 2) * 2;
   if (numColumns > 6) numColumns = 6;
 
-  // Calcula a largura da carta para caber na tela
-  const screenWidth = Dimensions.get('window').width;
-  const cardMargin = 5;
-  const totalMargin = (numColumns + 1) * cardMargin * 2;
-  const cardWidth = (screenWidth - totalMargin) / numColumns;
-  // Ajusta a altura proporcionalmente (exemplo)
-  const cardHeight = cardWidth * 1.33;
+  // 4. (Remova todos os cálculos de screenWidth, cardWidth, cardHeight)
+
+  // 5. Calcule a LARGURA DO TABULEIRO
+  const cardTotalWidth = CARD_WIDTH + CARD_MARGIN * 2;
+  const boardWidth = numColumns * cardTotalWidth + CONTAINER_PADDING * 2;
 
   return (
-    <View style={[styles.boardContainer, { width: screenWidth }]}>
+    // 6. Aplique a 'boardWidth' calculada ao container
+    //    Isso força o 'flexWrap' a funcionar após o número correto de colunas.
+    <View style={[styles.boardContainer, { width: boardWidth }]}>
       {cards.map((card) => (
-        <View key={card.id} style={{ width: cardWidth + cardMargin * 2, height: cardHeight + cardMargin * 2}}>
-             {/* Ajusta o tamanho e margem do Card diretamente */}
-             <Card
-                card={card}
-                onPress={onCardPress}
-                isDisabled={isDisabled}
-                style={{ width: cardWidth, height: cardHeight, margin: cardMargin }} // Passa estilo para o Card se ele aceitar
-             />
-         </View>
+        // 7. Renderize o Card simples, sem passar a prop 'style'
+        <Card
+          key={card.id}
+          card={card}
+          onPress={onCardPress}
+          isDisabled={isDisabled}
+        />
       ))}
     </View>
   );
@@ -35,11 +38,11 @@ const GameBoard = ({ cards, onCardPress, isDisabled, level }) => {
 
 const styles = StyleSheet.create({
   boardContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 10,
+    flexDirection: "row",
+    flexWrap: "wrap", // Agora isso vai funcionar!
+    justifyContent: "center",
+    alignItems: "center",
+    padding: CONTAINER_PADDING, // 10
   },
 });
 
