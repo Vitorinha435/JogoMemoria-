@@ -1,33 +1,32 @@
 // App.js
-import React, 'useState'
+import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native'; // Mantenha Text se precisar dele em algum lugar
 
-// Importe as telas que você criará
-// import MenuScreen from './src/screens/MenuScreen';
-// import GameScreen from './src/screens/GameScreen';
-// import ScoreScreen from './src/screens/ScoreScreen';
+// Importe as telas reais que você criou
+import MenuScreen from './src/screens/MenuScreen';
+import GameScreen from './src/screens/GameScreen';
+import ScoreScreen from './src/screens/ScoreScreen';
 
-// Mock Screens (substitua pelos imports reais quando criá-los)
-const MenuScreen = ({ setCurrentScreen }) => <View style={styles.container}><Text onPress={() => setCurrentScreen('Game')}>Ir para Jogo (Mock)</Text></View>;
-const GameScreen = ({ setCurrentScreen }) => <View style={styles.container}><Text onPress={() => setCurrentScreen('Menu')}>Ir para Menu (Mock)</Text></View>;
-const ScoreScreen = ({ setCurrentScreen }) => <View style={styles.container}><Text onPress={() => setCurrentScreen('Menu')}>Ir para Menu (Mock)</Text></View>;
-// --- Fim Mocks ---
-
-import { Text } from 'react-native'; // Adicionado para os mocks
+// Remova os Mocks
+// const MenuScreen = ...
+// const GameScreen = ...
+// const ScoreScreen = ...
 
 export default function App() {
-  // Estado para controlar a tela atual ('Menu', 'Game', 'Score') [cite: 16]
-  const [currentScreen, setCurrentScreen] = useState('Menu');
+  const [currentScreen, setCurrentScreen] = useState('Menu'); // Estado para controlar a tela atual ('Menu', 'Game', 'Score') 
 
   const renderScreen = () => {
     switch (currentScreen) {
       case 'Game':
+        // Passa a função para poder voltar ao menu
         return <GameScreen setCurrentScreen={setCurrentScreen} />;
       case 'Score':
+        // Passa a função para poder voltar ao menu
         return <ScoreScreen setCurrentScreen={setCurrentScreen} />;
       case 'Menu':
       default:
+        // Passa a função para navegar para outras telas
         return <MenuScreen setCurrentScreen={setCurrentScreen} />;
     }
   };
@@ -44,7 +43,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    // alignItems e justifyContent podem ser removidos daqui se cada tela controlar seu layout
   },
 });
