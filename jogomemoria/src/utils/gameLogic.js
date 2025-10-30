@@ -148,6 +148,8 @@ export const generateCards = (level) => {
     `Generating cards for level ${level}: ${numPairs} pairs, ${numCards} total cards.`
   );
 
+  let selectedEmojis;
+
   if (numPairs > EMOJIS.length) {
     console.warn(
       `Não há emojis suficientes (${EMOJIS.length}) para ${numPairs} pares no nível ${level}!`
@@ -160,7 +162,7 @@ export const generateCards = (level) => {
       if (emojisCopy.length === 0) emojisCopy = [...EMOJIS]; // Reinicia se acabarem os emojis
       neededEmojis.push(emojisCopy.pop());
     }
-    const selectedEmojis = shuffleArray(neededEmojis);
+    selectedEmojis = shuffleArray(neededEmojis);
 
     // return []; // Descomente se preferir parar o jogo
   } else {
