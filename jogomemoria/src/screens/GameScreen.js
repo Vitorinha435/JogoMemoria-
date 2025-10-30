@@ -122,12 +122,23 @@ const GameScreen = ({ setCurrentScreen, playerName, startLevel }) => {
       const scoreData = await AsyncStorage.getItem(
         `${HIGHSCORE_KEY_PREFIX}${currentLevel}`
       );
-      const currentHighScore = scoreData ? JSON.parse(scoreData).score : null;
+
+      let currentHighScore = null;
+      if (scoreData) {
+        try {
+          // Tenta parsear como JSON (novo formato)
+          const parsedData = JSON.parse(scoreData);
+          currentHighScore = parsedData.score;
+        } catch (e) {
+          // Se falhar, assume que é um número (formato antigo)
+          currentHighScore = parseInt(scoreData, 10);
+        }
+      }
 
       if (currentHighScore === null || currentAttempts < currentHighScore) {
         const newScore = {
           score: currentAttempts,
-          player: playerName,
+          player: playerName || "Anônimo", // Garante que o jogador tenha um nome
         };
         await AsyncStorage.setItem(
           `${HIGHSCORE_KEY_PREFIX}${currentLevel}`,
@@ -135,7 +146,7 @@ const GameScreen = ({ setCurrentScreen, playerName, startLevel }) => {
         );
         setHighScore(currentAttempts);
         console.log(
-          `Novo recorde para Nível ${currentLevel}: ${currentAttempts} tentativas por ${playerName}.`
+          `Novo recorde para Nível ${currentLevel}: ${currentAttempts} tentativas por ${newScore.player}.`
         );
       }
     } catch (e) {

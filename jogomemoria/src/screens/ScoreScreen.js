@@ -21,8 +21,12 @@ const ScoreScreen = ({ setCurrentScreen }) => {
                 scorePairs.forEach(([key, value]) => {
                     if (value !== null) {
                         const level = key.replace(HIGHSCORE_KEY_PREFIX, '');
-                        const { score, player } = JSON.parse(value);
-                        loadedScores.push({ level: parseInt(level, 10), score, player });
+                        try {
+                            const { score, player } = JSON.parse(value);
+                            loadedScores.push({ level: parseInt(level, 10), score, player });
+                        } catch (e) {
+                            loadedScores.push({ level: parseInt(level, 10), score: parseInt(value, 10), player: 'Anônimo' });
+                        }
                     }
                 });
 
@@ -49,6 +53,19 @@ const ScoreScreen = ({ setCurrentScreen }) => {
         </View>
     );
 
+    const handleClearScores = async () => {
+        try {
+            const keys = await AsyncStorage.getAllKeys();
+            const scoreKeys = keys.filter(key => key.startsWith(HIGHSCORE_KEY_PREFIX));
+            await AsyncStorage.multiRemove(scoreKeys);
+            setScores([]); // Limpa a lista na tela
+            Alert.alert("Recordes Limpos", "Todos os recordes foram removidos.");
+        } catch (error) {
+            console.error("Erro ao limpar recordes:", error);
+            Alert.alert("Erro", "Não foi possível limpar os recordes.");
+        }
+    };
+
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Recordes</Text>
@@ -64,6 +81,10 @@ const ScoreScreen = ({ setCurrentScreen }) => {
             ) : (
                 <Text>Nenhum recorde salvo ainda.</Text>
             )}
+
+            <View style={styles.buttonContainer}>
+                <Button title="Limpar Recordes" onPress={handleClearScores} color="#ff6347" />
+            </View>
             <View style={styles.buttonContainer}>
                <Button title="Voltar ao Menu" onPress={() => setCurrentScreen('Menu')} />
             </View>
