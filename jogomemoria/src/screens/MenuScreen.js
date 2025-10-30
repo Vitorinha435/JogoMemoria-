@@ -1,4 +1,3 @@
-// src/screens/MenuScreen.js
 import React from 'react';
 import { View, Text, Button, StyleSheet, TextInput, Alert } from 'react-native';
 

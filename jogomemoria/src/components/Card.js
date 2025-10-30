@@ -1,8 +1,6 @@
-// src/components/Card.js
 import React, { useRef, useEffect } from "react";
 import { TouchableOpacity, Text, StyleSheet, Animated } from "react-native";
 
-// 1. Remova 'style' das props. Não precisamos mais dele.
 const Card = ({ card, onPress, isDisabled }) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
   const frontInterpolate = animatedValue.interpolate({
@@ -36,17 +34,14 @@ const Card = ({ card, onPress, isDisabled }) => {
   };
 
   return (
-    // 2. Remova o [styles.cardContainer, style] e volte para apenas style={styles.cardContainer}
     <TouchableOpacity
       onPress={handlePress}
       style={styles.cardContainer}
       disabled={isDisabled || card.isFlipped || card.isMatched}
     >
-      {/* Frente da Carta (Oculta) */}
       <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle]}>
         <Text style={styles.cardText}>{card.content}</Text>
       </Animated.View>
-      {/* Verso da Carta (Visível inicialmente) */}
       <Animated.View
         style={[styles.card, styles.cardFront, frontAnimatedStyle]}
       >
@@ -58,9 +53,8 @@ const Card = ({ card, onPress, isDisabled }) => {
 
 const styles = StyleSheet.create({
   cardContainer: {
-    // 3. COLOQUE O TAMANHO FIXO DE VOLTA:
-    width: 80, // Um bom tamanho padrão
-    height: 100, // Proporcional
+    width: 80,
+    height: 100,
     margin: 5,
     alignItems: "center",
     justifyContent: "center",

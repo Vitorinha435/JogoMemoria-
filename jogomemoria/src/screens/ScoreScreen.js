@@ -1,6 +1,5 @@
-// src/screens/ScoreScreen.js
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, Button, StyleSheet, FlatList, ActivityIndicator, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HIGHSCORE_KEY_PREFIX = 'highscore_level_';
@@ -9,39 +8,38 @@ const ScoreScreen = ({ setCurrentScreen }) => {
     const [scores, setScores] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const loadScores = async () => {
-            setLoading(true);
-            const loadedScores = [];
-            try {
-                const keys = await AsyncStorage.getAllKeys();
-                const scoreKeys = keys.filter(key => key.startsWith(HIGHSCORE_KEY_PREFIX));
-                const scorePairs = await AsyncStorage.multiGet(scoreKeys);
+    const loadScores = async () => {
+        setLoading(true);
+        const loadedScores = [];
+        try {
+            const keys = await AsyncStorage.getAllKeys();
+            const scoreKeys = keys.filter(key => key.startsWith(HIGHSCORE_KEY_PREFIX));
+            const scorePairs = await AsyncStorage.multiGet(scoreKeys);
 
-                scorePairs.forEach(([key, value]) => {
-                    if (value !== null) {
-                        const level = key.replace(HIGHSCORE_KEY_PREFIX, '');
-                        try {
-                            const { score, player } = JSON.parse(value);
-                            loadedScores.push({ level: parseInt(level, 10), score, player });
-                        } catch (e) {
-                            loadedScores.push({ level: parseInt(level, 10), score: parseInt(value, 10), player: 'Anônimo' });
-                        }
+            scorePairs.forEach(([key, value]) => {
+                if (value !== null) {
+                    const level = key.replace(HIGHSCORE_KEY_PREFIX, '');
+                    try {
+                        const { score, player } = JSON.parse(value);
+                        loadedScores.push({ level: parseInt(level, 10), score, player });
+                    } catch (e) {
+                        loadedScores.push({ level: parseInt(level, 10), score: parseInt(value, 10), player: 'Anônimo' });
                     }
-                });
+                }
+            });
 
-                // Ordena por nível
-                loadedScores.sort((a, b) => a.level - b.level);
-                setScores(loadedScores);
+            loadedScores.sort((a, b) => a.level - b.level);
+            setScores(loadedScores);
 
-            } catch (error) {
-                console.error("Erro ao carregar recordes:", error);
-                Alert.alert("Erro", "Não foi possível carregar os recordes.");
-            } finally {
-                setLoading(false);
-            }
-        };
+        } catch (error) {
+            console.error("Erro ao carregar recordes:", error);
+            Alert.alert("Erro", "Não foi possível carregar os recordes.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         loadScores();
     }, []);
 
@@ -58,7 +56,7 @@ const ScoreScreen = ({ setCurrentScreen }) => {
             const keys = await AsyncStorage.getAllKeys();
             const scoreKeys = keys.filter(key => key.startsWith(HIGHSCORE_KEY_PREFIX));
             await AsyncStorage.multiRemove(scoreKeys);
-            setScores([]); // Limpa a lista na tela
+            setScores([]);
             Alert.alert("Recordes Limpos", "Todos os recordes foram removidos.");
         } catch (error) {
             console.error("Erro ao limpar recordes:", error);

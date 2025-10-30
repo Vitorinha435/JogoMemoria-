@@ -1,11 +1,9 @@
-// src/screens/GameScreen.js
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, StyleSheet, Button, Alert } from "react-native"; // Mantemos Alert caso precisemos dele para outras coisas
+import { View, Text, StyleSheet, Button, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import GameBoard from "../components/GameBoard";
 import { generateCards, getTimeLimit } from "../utils/gameLogic";
 
-// Constantes para AsyncStorage
 const LEVEL_KEY = "currentLevel";
 const HIGHSCORE_KEY_PREFIX = "highscore_level_";
 
@@ -19,11 +17,10 @@ const GameScreen = ({ setCurrentScreen, playerName, startLevel }) => {
   const [isChecking, setIsChecking] = useState(false);
   const [highScore, setHighScore] = useState(null);
   const [isTimeUp, setIsTimeUp] = useState(false);
-  const [isLevelComplete, setIsLevelComplete] = useState(false); // <<< Novo estado para mostrar o botão
+  const [isLevelComplete, setIsLevelComplete] = useState(false);
 
   const timerIntervalRef = useRef(null);
 
-  // Função para iniciar/reiniciar um nível
   const setupLevel = async (currentLevel) => {
     console.log(`Setting up Level ${currentLevel}`);
     const newCards = generateCards(currentLevel);
@@ -35,20 +32,17 @@ const GameScreen = ({ setCurrentScreen, playerName, startLevel }) => {
     setMatchedPairs(0);
     setIsChecking(false);
     setIsTimeUp(false);
-    setIsLevelComplete(false); // <<< Reseta o estado de nível completo
+    setIsLevelComplete(false);
     await loadHighScore(currentLevel);
     startTimer();
   };
 
-  // Carregar progresso ao iniciar
   useEffect(() => {
     const loadProgress = async () => {
       let currentLevel = 1;
       if (startLevel === 1) {
-        // Se for um novo jogo, reseta o nível salvo
         await AsyncStorage.setItem(LEVEL_KEY, '1');
       } else {
-        // Tenta carregar o nível salvo para continuar
         try {
           const savedLevel = await AsyncStorage.getItem(LEVEL_KEY);
           if (savedLevel !== null) {
@@ -66,7 +60,6 @@ const GameScreen = ({ setCurrentScreen, playerName, startLevel }) => {
     return () => stopTimer();
   }, [startLevel]);
 
-  // Iniciar timer
   const startTimer = () => {
     stopTimer();
     timerIntervalRef.current = setInterval(() => {
@@ -81,7 +74,6 @@ const GameScreen = ({ setCurrentScreen, playerName, startLevel }) => {
     }, 1000);
   };
 
-  // Parar timer
   const stopTimer = () => {
     if (timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current);
@@ -89,16 +81,13 @@ const GameScreen = ({ setCurrentScreen, playerName, startLevel }) => {
     }
   };
 
-  // Lidar com o fim do tempo
   const handleTimeOut = () => {
     setIsTimeUp(true);
     Alert.alert("Tempo Esgotado!", "Tente novamente.", [
-      // Mantemos o Alert aqui, mas você pode mudar se quiser
       { text: "OK", onPress: () => setupLevel(level) },
     ]);
   };
 
-  // Carregar recorde para o nível
   const loadHighScore = async (currentLevel) => {
     try {
       const scoreData = await AsyncStorage.getItem(
@@ -116,7 +105,6 @@ const GameScreen = ({ setCurrentScreen, playerName, startLevel }) => {
     }
   };
 
-  // Salvar recorde para o nível
   const saveHighScore = async (currentLevel, currentAttempts) => {
     try {
       const scoreData = await AsyncStorage.getItem(
@@ -126,11 +114,9 @@ const GameScreen = ({ setCurrentScreen, playerName, startLevel }) => {
       let currentHighScore = null;
       if (scoreData) {
         try {
-          // Tenta parsear como JSON (novo formato)
           const parsedData = JSON.parse(scoreData);
           currentHighScore = parsedData.score;
         } catch (e) {
-          // Se falhar, assume que é um número (formato antigo)
           currentHighScore = parseInt(scoreData, 10);
         }
       }
@@ -138,7 +124,7 @@ const GameScreen = ({ setCurrentScreen, playerName, startLevel }) => {
       if (currentHighScore === null || currentAttempts < currentHighScore) {
         const newScore = {
           score: currentAttempts,
-          player: playerName || "Anônimo", // Garante que o jogador tenha um nome
+          player: playerName || "Anônimo",
         };
         await AsyncStorage.setItem(
           `${HIGHSCORE_KEY_PREFIX}${currentLevel}`,
@@ -154,7 +140,6 @@ const GameScreen = ({ setCurrentScreen, playerName, startLevel }) => {
     }
   };
 
-  // Lógica de verificação de pares (sem alterações aqui)
   useEffect(() => {
     if (flippedCards.length === 2) {
       setIsChecking(true);
@@ -190,7 +175,6 @@ const GameScreen = ({ setCurrentScreen, playerName, startLevel }) => {
     }
   }, [flippedCards, cards]);
 
-  // Lógica de conclusão do nível - <<< MODIFICADA <<<
   useEffect(() => {
     const totalPairs = cards.length / 2;
     console.log(
@@ -198,14 +182,11 @@ const GameScreen = ({ setCurrentScreen, playerName, startLevel }) => {
     );
     if (totalPairs > 0 && matchedPairs === totalPairs) {
       stopTimer();
-      console.log(`Nível ${level} completo em ${attempts} tentativas!`); // Log para indicar conclusão
-      setIsLevelComplete(true); // <<< Seta o estado para mostrar o botão
-      // <<< O Alert foi removido daqui <<<
+      console.log(`Nível ${level} completo em ${attempts} tentativas!`);
+      setIsLevelComplete(true);
     }
-    // As dependências originais são mantidas, mas a lógica dentro mudou.
   }, [matchedPairs, cards.length, level, attempts]);
 
-  // <<< Nova função para o clique do botão "Próximo Nível" <<<
   const handleNextLevelClick = async () => {
     await saveHighScore(level, attempts);
     const nextLevel = level + 1;
@@ -215,12 +196,10 @@ const GameScreen = ({ setCurrentScreen, playerName, startLevel }) => {
       console.error("Failed to save level.", e);
     }
     setLevel(nextLevel);
-    setupLevel(nextLevel); // Configura e inicia o próximo nível
+    setupLevel(nextLevel);
   };
 
-  // Função chamada quando uma carta é pressionada
   const handleCardPress = (cardId) => {
-    // Só permite virar se o nível não estiver completo E o tempo não tiver acabado
     if (
       flippedCards.length < 2 &&
       !isChecking &&
@@ -249,7 +228,6 @@ const GameScreen = ({ setCurrentScreen, playerName, startLevel }) => {
         </Text>
       )}
 
-      {/* Mensagem de Conclusão e Botão Próximo Nível (condicional) */}
       {isLevelComplete && (
         <View style={styles.completionContainer}>
           <Text style={styles.completionText}>
@@ -259,12 +237,10 @@ const GameScreen = ({ setCurrentScreen, playerName, startLevel }) => {
         </View>
       )}
 
-      {/* O Tabuleiro do Jogo só é mostrado se o nível NÃO estiver completo */}
       {!isLevelComplete && (
         <GameBoard
           cards={cards}
           onCardPress={handleCardPress}
-          // Desabilitado durante checagem, se 2 cartas viradas, se tempo acabou OU se nível completo
           isDisabled={
             isChecking ||
             flippedCards.length === 2 ||
@@ -275,12 +251,9 @@ const GameScreen = ({ setCurrentScreen, playerName, startLevel }) => {
         />
       )}
 
-      {/* Botão Voltar Menu - pode ser mostrado sempre ou condicionalmente */}
-      {/* {!isLevelComplete && ( // Exemplo: Esconder quando nível completo */}
       <View style={styles.bottomButton}>
         <Button title="Voltar Menu" onPress={() => setCurrentScreen("Menu")} />
       </View>
-      {/* )} */}
     </View>
   );
 };
@@ -311,12 +284,11 @@ const styles = StyleSheet.create({
     color: "#888",
     marginBottom: 15,
   },
-  // <<< Estilos para a mensagem e botão de próximo nível <<<
   completionContainer: {
     alignItems: "center",
     marginVertical: 20,
     padding: 15,
-    backgroundColor: "#e0ffe0", // Um fundo verde claro
+    backgroundColor: "#e0ffe0",
     borderRadius: 8,
     width: "80%",
   },
@@ -327,9 +299,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#333",
   },
-  // <<< Estilo para posicionar o botão Voltar Menu (opcional) <<<
   bottomButton: {
-    marginTop: 20, // Ajuste conforme necessário
+    marginTop: 20,
     width: "60%",
   },
 });
