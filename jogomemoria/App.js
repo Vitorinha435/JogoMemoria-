@@ -15,19 +15,26 @@ import ScoreScreen from "./src/screens/ScoreScreen";
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState("Menu"); // Estado para controlar a tela atual ('Menu', 'Game', 'Score')
+  const [playerName, setPlayerName] = useState(""); // Estado para o nome do jogador
 
   const renderScreen = () => {
     switch (currentScreen) {
       case "Game":
         // Passa a função para poder voltar ao menu
-        return <GameScreen setCurrentScreen={setCurrentScreen} />;
+        return <GameScreen setCurrentScreen={setCurrentScreen} playerName={playerName} />;
       case "Score":
         // Passa a função para poder voltar ao menu
-        return <ScoreScreen setCurrentScreen={setCurrentScreen} />;
+        return <ScoreScreen setCurrentScreen={setCurrentScreen} playerName={playerName} />;
       case "Menu":
       default:
         // Passa a função para navegar para outras telas
-        return <MenuScreen setCurrentScreen={setCurrentScreen} />;
+        return (
+          <MenuScreen
+            setCurrentScreen={setCurrentScreen}
+            setPlayerName={setPlayerName}
+            playerName={playerName}
+          />
+        );
     }
   };
 
