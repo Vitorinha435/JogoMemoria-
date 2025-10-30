@@ -21,7 +21,8 @@ const ScoreScreen = ({ setCurrentScreen }) => {
                 scorePairs.forEach(([key, value]) => {
                     if (value !== null) {
                         const level = key.replace(HIGHSCORE_KEY_PREFIX, '');
-                        loadedScores.push({ level: parseInt(level, 10), score: parseInt(value, 10) });
+                        const { score, player } = JSON.parse(value);
+                        loadedScores.push({ level: parseInt(level, 10), score, player });
                     }
                 });
 
@@ -43,6 +44,7 @@ const ScoreScreen = ({ setCurrentScreen }) => {
     const renderScoreItem = ({ item }) => (
         <View style={styles.scoreItem}>
             <Text style={styles.levelText}>Nível {item.level}:</Text>
+            <Text style={styles.playerText}>{item.player}</Text>
             <Text style={styles.scoreText}>{item.score} tentativas</Text>
         </View>
     );
@@ -98,9 +100,17 @@ const styles = StyleSheet.create({
     levelText: {
         fontSize: 18,
         fontWeight: 'bold',
+        flex: 1,
+    },
+    playerText: {
+        fontSize: 18,
+        flex: 2,
+        textAlign: 'center',
     },
     scoreText: {
         fontSize: 18,
+        flex: 1,
+        textAlign: 'right',
     },
     buttonContainer: {
         marginTop: 30,

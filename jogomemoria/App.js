@@ -14,20 +14,40 @@ import ScoreScreen from "./src/screens/ScoreScreen";
 // const ScoreScreen = ...
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState("Menu"); // Estado para controlar a tela atual ('Menu', 'Game', 'Score')
+  const [currentScreen, setCurrentScreen] = useState("Menu");
+  const [playerName, setPlayerName] = useState("");
+  const [gameKey, setGameKey] = useState(0); // Para forçar a remontagem do GameScreen
+  const [startLevel, setStartLevel] = useState(null); // null para continuar, 1 para novo jogo
+
+  const handleStartGame = (level) => {
+    setStartLevel(level);
+    setCurrentScreen("Game");
+    setGameKey(prevKey => prevKey + 1); // Muda a chave para remontar o GameScreen
+  };
 
   const renderScreen = () => {
     switch (currentScreen) {
       case "Game":
-        // Passa a função para poder voltar ao menu
-        return <GameScreen setCurrentScreen={setCurrentScreen} />;
+        return (
+          <GameScreen
+            key={gameKey}
+            setCurrentScreen={setCurrentScreen}
+            playerName={playerName}
+            startLevel={startLevel}
+          />
+        );
       case "Score":
-        // Passa a função para poder voltar ao menu
         return <ScoreScreen setCurrentScreen={setCurrentScreen} />;
       case "Menu":
       default:
-        // Passa a função para navegar para outras telas
-        return <MenuScreen setCurrentScreen={setCurrentScreen} />;
+        return (
+          <MenuScreen
+            setCurrentScreen={setCurrentScreen}
+            setPlayerName={setPlayerName}
+            playerName={playerName}
+            onStartGame={handleStartGame}
+          />
+        );
     }
   };
 

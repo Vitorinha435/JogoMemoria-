@@ -9,7 +9,7 @@ import { generateCards, getTimeLimit } from "../utils/gameLogic";
 const LEVEL_KEY = "currentLevel";
 const HIGHSCORE_KEY_PREFIX = "highscore_level_";
 
-const GameScreen = ({ setCurrentScreen }) => {
+const GameScreen = ({ setCurrentScreen, playerName, startLevel }) => {
   const [level, setLevel] = useState(1);
   const [cards, setCards] = useState([]);
   const [flippedCards, setFlippedCards] = useState([]);
@@ -44,13 +44,19 @@ const GameScreen = ({ setCurrentScreen }) => {
   useEffect(() => {
     const loadProgress = async () => {
       let currentLevel = 1;
-      try {
-        const savedLevel = await AsyncStorage.getItem(LEVEL_KEY);
-        if (savedLevel !== null) {
-          currentLevel = parseInt(savedLevel, 10);
+      if (startLevel === 1) {
+        // Se for um novo jogo, reseta o nível salvo
+        await AsyncStorage.setItem(LEVEL_KEY, '1');
+      } else {
+        // Tenta carregar o nível salvo para continuar
+        try {
+          const savedLevel = await AsyncStorage.getItem(LEVEL_KEY);
+          if (savedLevel !== null) {
+            currentLevel = parseInt(savedLevel, 10);
+          }
+        } catch (e) {
+          console.error("Failed to load level.", e);
         }
-      } catch (e) {
-        console.error("Failed to load level.", e);
       }
       setLevel(currentLevel);
       setupLevel(currentLevel);
@@ -58,7 +64,7 @@ const GameScreen = ({ setCurrentScreen }) => {
     loadProgress();
 
     return () => stopTimer();
-  }, []);
+  }, [startLevel]);
 
   // Iniciar timer
   const startTimer = () => {
@@ -95,10 +101,15 @@ const GameScreen = ({ setCurrentScreen }) => {
   // Carregar recorde para o nível
   const loadHighScore = async (currentLevel) => {
     try {
-      const score = await AsyncStorage.getItem(
+      const scoreData = await AsyncStorage.getItem(
         `${HIGHSCORE_KEY_PREFIX}${currentLevel}`
       );
-      setHighScore(score !== null ? parseInt(score, 10) : null);
+      if (scoreData !== null) {
+        const { score } = JSON.parse(scoreData);
+        setHighScore(score);
+      } else {
+        setHighScore(null);
+      }
     } catch (e) {
       console.error("Failed to load high score.", e);
       setHighScore(null);
@@ -108,20 +119,23 @@ const GameScreen = ({ setCurrentScreen }) => {
   // Salvar recorde para o nível
   const saveHighScore = async (currentLevel, currentAttempts) => {
     try {
-      const currentHighScore = await AsyncStorage.getItem(
+      const scoreData = await AsyncStorage.getItem(
         `${HIGHSCORE_KEY_PREFIX}${currentLevel}`
       );
-      if (
-        currentHighScore === null ||
-        currentAttempts < parseInt(currentHighScore, 10)
-      ) {
+      const currentHighScore = scoreData ? JSON.parse(scoreData).score : null;
+
+      if (currentHighScore === null || currentAttempts < currentHighScore) {
+        const newScore = {
+          score: currentAttempts,
+          player: playerName,
+        };
         await AsyncStorage.setItem(
           `${HIGHSCORE_KEY_PREFIX}${currentLevel}`,
-          String(currentAttempts)
+          JSON.stringify(newScore)
         );
         setHighScore(currentAttempts);
         console.log(
-          `Novo recorde para Nível ${currentLevel}: ${currentAttempts} tentativas.`
+          `Novo recorde para Nível ${currentLevel}: ${currentAttempts} tentativas por ${playerName}.`
         );
       }
     } catch (e) {
