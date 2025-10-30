@@ -124,8 +124,10 @@ function shuffleArray(array) {
  * @returns {number} O número de pares de cartas.
  */
 const getNumPairsForLevel = (level) => {
-  const dimension = level * 2; // Nível 1 -> 2x2, Nível 2 -> 4x4, Nível 3 -> 6x6
-  return (dimension * dimension) / 2; // Total de cartas / 2
+  // Nível 1 -> 2 pares (4 cartas)
+  // Nível 2 -> 3 pares (6 cartas)
+  // Nível 3 -> 4 pares (8 cartas)
+  return level + 1;
 };
 
 // --- Função getGridDimensions adicionada para ajudar o GameBoard ---
@@ -135,8 +137,20 @@ const getNumPairsForLevel = (level) => {
  * @returns {{rows: number, cols: number}} As dimensões do grid.
  */
 export const getGridDimensions = (level) => {
-  const dimension = level * 2; // Nível 1 -> 2, Nível 2 -> 4, Nível 3 -> 6
-  return { rows: dimension, cols: dimension };
+  const numPairs = getNumPairsForLevel(level);
+  const totalCards = numPairs * 2;
+
+  // Encontra o fator mais próximo da raiz quadrada para um grid "quase quadrado"
+  let cols = Math.ceil(Math.sqrt(totalCards));
+  let rows = Math.ceil(totalCards / cols);
+
+  // Garante que o grid pode conter todas as cartas
+  while (rows * cols < totalCards) {
+    cols++;
+    rows = Math.ceil(totalCards / cols);
+  }
+
+  return { rows, cols };
 };
 // --- Fim da função adicionada ---
 
@@ -147,6 +161,8 @@ export const generateCards = (level) => {
   console.log(
     `Generating cards for level ${level}: ${numPairs} pairs, ${numCards} total cards.`
   );
+
+  let selectedEmojis;
 
   if (numPairs > EMOJIS.length) {
     console.warn(
@@ -160,7 +176,7 @@ export const generateCards = (level) => {
       if (emojisCopy.length === 0) emojisCopy = [...EMOJIS]; // Reinicia se acabarem os emojis
       neededEmojis.push(emojisCopy.pop());
     }
-    const selectedEmojis = shuffleArray(neededEmojis);
+    selectedEmojis = shuffleArray(neededEmojis);
 
     // return []; // Descomente se preferir parar o jogo
   } else {

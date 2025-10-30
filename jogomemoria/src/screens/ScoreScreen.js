@@ -21,7 +21,12 @@ const ScoreScreen = ({ setCurrentScreen }) => {
                 scorePairs.forEach(([key, value]) => {
                     if (value !== null) {
                         const level = key.replace(HIGHSCORE_KEY_PREFIX, '');
-                        loadedScores.push({ level: parseInt(level, 10), score: parseInt(value, 10) });
+                        try {
+                            const { score, player } = JSON.parse(value);
+                            loadedScores.push({ level: parseInt(level, 10), score, player });
+                        } catch (e) {
+                            loadedScores.push({ level: parseInt(level, 10), score: parseInt(value, 10), player: 'Anônimo' });
+                        }
                     }
                 });
 
@@ -43,9 +48,23 @@ const ScoreScreen = ({ setCurrentScreen }) => {
     const renderScoreItem = ({ item }) => (
         <View style={styles.scoreItem}>
             <Text style={styles.levelText}>Nível {item.level}:</Text>
+            <Text style={styles.playerText}>{item.player}</Text>
             <Text style={styles.scoreText}>{item.score} tentativas</Text>
         </View>
     );
+
+    const handleClearScores = async () => {
+        try {
+            const keys = await AsyncStorage.getAllKeys();
+            const scoreKeys = keys.filter(key => key.startsWith(HIGHSCORE_KEY_PREFIX));
+            await AsyncStorage.multiRemove(scoreKeys);
+            setScores([]); // Limpa a lista na tela
+            Alert.alert("Recordes Limpos", "Todos os recordes foram removidos.");
+        } catch (error) {
+            console.error("Erro ao limpar recordes:", error);
+            Alert.alert("Erro", "Não foi possível limpar os recordes.");
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -62,6 +81,10 @@ const ScoreScreen = ({ setCurrentScreen }) => {
             ) : (
                 <Text>Nenhum recorde salvo ainda.</Text>
             )}
+
+            <View style={styles.buttonContainer}>
+                <Button title="Limpar Recordes" onPress={handleClearScores} color="#ff6347" />
+            </View>
             <View style={styles.buttonContainer}>
                <Button title="Voltar ao Menu" onPress={() => setCurrentScreen('Menu')} />
             </View>
@@ -98,9 +121,17 @@ const styles = StyleSheet.create({
     levelText: {
         fontSize: 18,
         fontWeight: 'bold',
+        flex: 1,
+    },
+    playerText: {
+        fontSize: 18,
+        flex: 2,
+        textAlign: 'center',
     },
     scoreText: {
         fontSize: 18,
+        flex: 1,
+        textAlign: 'right',
     },
     buttonContainer: {
         marginTop: 30,
