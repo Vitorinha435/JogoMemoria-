@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Button, Alert } from "react-native"; // Mantemos Alert caso precisemos dele para outras coisas
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Audio } from 'expo-av';
 import GameBoard from "../components/GameBoard";
 import { generateCards, getTimeLimit } from "../utils/gameLogic";
 
@@ -10,7 +9,7 @@ import { generateCards, getTimeLimit } from "../utils/gameLogic";
 const LEVEL_KEY = "currentLevel";
 const HIGHSCORE_KEY_PREFIX = "highscore_level_";
 
-const GameScreen = ({ setCurrentScreen, playerName }) => {
+const GameScreen = ({ setCurrentScreen }) => {
   const [level, setLevel] = useState(1);
   const [cards, setCards] = useState([]);
   const [flippedCards, setFlippedCards] = useState([]);
@@ -23,30 +22,6 @@ const GameScreen = ({ setCurrentScreen, playerName }) => {
   const [isLevelComplete, setIsLevelComplete] = useState(false); // <<< Novo estado para mostrar o botão
 
   const timerIntervalRef = useRef(null);
-  const soundObject = useRef(new Audio.Sound());
-
-  // Carrega e toca o som
-  const playSound = async () => {
-    try {
-      // Adicione um arquivo de som em assets/sounds/match.mp3
-      await soundObject.current.loadAsync(require('../../assets/sounds/match.mp3'));
-      await soundObject.current.playAsync();
-      soundObject.current.setOnPlaybackStatusUpdate(async (status) => {
-        if (status.didJustFinish) {
-          await soundObject.current.unloadAsync();
-        }
-      });
-    } catch (error) {
-      console.error("Não foi possível tocar o som. Verifique se o arquivo de som existe em assets/sounds/match.mp3", error);
-    }
-  };
-
-  // Descarrega o som quando o componente é desmontado
-  useEffect(() => {
-    return () => {
-      soundObject.current.unloadAsync();
-    };
-  }, []);
 
   // Função para iniciar/reiniciar um nível
   const setupLevel = async (currentLevel) => {
@@ -120,15 +95,10 @@ const GameScreen = ({ setCurrentScreen, playerName }) => {
   // Carregar recorde para o nível
   const loadHighScore = async (currentLevel) => {
     try {
-      const scoreData = await AsyncStorage.getItem(
+      const score = await AsyncStorage.getItem(
         `${HIGHSCORE_KEY_PREFIX}${currentLevel}`
       );
-      if (scoreData !== null) {
-        const { score } = JSON.parse(scoreData);
-        setHighScore(score);
-      } else {
-        setHighScore(null);
-      }
+      setHighScore(score !== null ? parseInt(score, 10) : null);
     } catch (e) {
       console.error("Failed to load high score.", e);
       setHighScore(null);
@@ -138,23 +108,20 @@ const GameScreen = ({ setCurrentScreen, playerName }) => {
   // Salvar recorde para o nível
   const saveHighScore = async (currentLevel, currentAttempts) => {
     try {
-      const scoreData = await AsyncStorage.getItem(
+      const currentHighScore = await AsyncStorage.getItem(
         `${HIGHSCORE_KEY_PREFIX}${currentLevel}`
       );
-      const currentHighScore = scoreData ? JSON.parse(scoreData).score : null;
-
-      if (currentHighScore === null || currentAttempts < currentHighScore) {
-        const newScore = {
-          score: currentAttempts,
-          player: playerName,
-        };
+      if (
+        currentHighScore === null ||
+        currentAttempts < parseInt(currentHighScore, 10)
+      ) {
         await AsyncStorage.setItem(
           `${HIGHSCORE_KEY_PREFIX}${currentLevel}`,
-          JSON.stringify(newScore)
+          String(currentAttempts)
         );
         setHighScore(currentAttempts);
         console.log(
-          `Novo recorde para Nível ${currentLevel}: ${currentAttempts} tentativas por ${playerName}.`
+          `Novo recorde para Nível ${currentLevel}: ${currentAttempts} tentativas.`
         );
       }
     } catch (e) {
@@ -172,7 +139,6 @@ const GameScreen = ({ setCurrentScreen, playerName }) => {
       const secondCard = cards.find((c) => c.id === secondCardId);
 
       if (firstCard.content === secondCard.content) {
-        playSound(); // Toca o som de match
         setCards((prevCards) =>
           prevCards.map((card) =>
             card.id === firstCardId || card.id === secondCardId

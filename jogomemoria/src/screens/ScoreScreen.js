@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HIGHSCORE_KEY_PREFIX = 'highscore_level_';
 
-const ScoreScreen = ({ setCurrentScreen, playerName }) => {
+const ScoreScreen = ({ setCurrentScreen }) => {
     const [scores, setScores] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -21,8 +21,7 @@ const ScoreScreen = ({ setCurrentScreen, playerName }) => {
                 scorePairs.forEach(([key, value]) => {
                     if (value !== null) {
                         const level = key.replace(HIGHSCORE_KEY_PREFIX, '');
-                        const { score, player } = JSON.parse(value);
-                        loadedScores.push({ level: parseInt(level, 10), score, player });
+                        loadedScores.push({ level: parseInt(level, 10), score: parseInt(value, 10) });
                     }
                 });
 
@@ -44,7 +43,6 @@ const ScoreScreen = ({ setCurrentScreen, playerName }) => {
     const renderScoreItem = ({ item }) => (
         <View style={styles.scoreItem}>
             <Text style={styles.levelText}>Nível {item.level}:</Text>
-            <Text style={styles.playerText}>{item.player}</Text>
             <Text style={styles.scoreText}>{item.score} tentativas</Text>
         </View>
     );
@@ -100,17 +98,9 @@ const styles = StyleSheet.create({
     levelText: {
         fontSize: 18,
         fontWeight: 'bold',
-        flex: 1,
-    },
-    playerText: {
-        fontSize: 18,
-        flex: 2,
-        textAlign: 'center',
     },
     scoreText: {
         fontSize: 18,
-        flex: 1,
-        textAlign: 'right',
     },
     buttonContainer: {
         marginTop: 30,
